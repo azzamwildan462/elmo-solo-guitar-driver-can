@@ -75,7 +75,7 @@ int8_t elmo_can_send_NMT(int8_t s, uint8_t command, uint8_t node_id)
 int8_t elmo_can_set_heartbeat(int8_t s, uint8_t node_id, uint16_t ms)
 {
     struct can_frame frame;
-    frame.can_id = 0x600 + node_id;
+    frame.can_id = ELMO_COBID_SDO_REQUEST + node_id;
     frame.can_dlc = 8;
 
     frame.data[0] = 0x22;             // Command byte for "Write 2 bytes"
@@ -208,8 +208,8 @@ int8_t elmo_can_ping_all(int8_t s, int8_t *nodes, uint16_t timeout_ms)
 int8_t elmo_can_read_req(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex)
 {
     struct can_frame frame;
-    frame.can_id = 0x600 + node_id; // SDO request to node ID
-    frame.can_dlc = 8;              // Data length for SDO request is 8
+    frame.can_id = ELMO_COBID_SDO_REQUEST + node_id; // SDO request to node ID
+    frame.can_dlc = 8;                               // Data length for SDO request is 8
 
     // SDO request to read the specified object
     frame.data[0] = 0x40;                // Command byte: Initiate SDO upload (read)
@@ -257,7 +257,7 @@ int8_t elmo_can_read(int8_t s, int8_t node_id, uint32_t &value, uint16_t timeout
         }
 
         // Check if the response is from the expected node
-        if (frame.can_id == 0x580 + node_id)
+        if (frame.can_id == ELMO_COBID_SDO_RESPONSE + node_id)
         { // SDO response from node ID
             // Extract the data from the response
             value = frame.data[4] | (frame.data[5] << 8) | (frame.data[6] << 16) | (frame.data[7] << 24);
@@ -294,7 +294,7 @@ int8_t elmo_can_read(int8_t s, int8_t node_id, int32_t &value, uint16_t timeout_
         }
 
         // Check if the response is from the expected node
-        if (frame.can_id == 0x580 + node_id)
+        if (frame.can_id == ELMO_COBID_SDO_RESPONSE + node_id)
         { // SDO response from node ID
             // Extract the data from the response
             value = frame.data[4] | (frame.data[5] << 8) | (frame.data[6] << 16) | (frame.data[7] << 24);
@@ -331,7 +331,7 @@ int8_t elmo_can_read(int8_t s, int8_t node_id, uint16_t &value, uint16_t timeout
         }
 
         // Check if the response is from the expected node
-        if (frame.can_id == 0x580 + node_id)
+        if (frame.can_id == ELMO_COBID_SDO_RESPONSE + node_id)
         { // SDO response from node ID
             // Extract the data from the response
             value = frame.data[4] | (frame.data[5] << 8);
@@ -368,7 +368,7 @@ int8_t elmo_can_read(int8_t s, int8_t node_id, int16_t &value, uint16_t timeout_
         }
 
         // Check if the response is from the expected node
-        if (frame.can_id == 0x580 + node_id)
+        if (frame.can_id == ELMO_COBID_SDO_RESPONSE + node_id)
         { // SDO response from node ID
             // Extract the data from the response
             value = frame.data[4] | (frame.data[5] << 8);
@@ -405,7 +405,7 @@ int8_t elmo_can_read(int8_t s, int8_t node_id, uint8_t &value, uint16_t timeout_
         }
 
         // Check if the response is from the expected node
-        if (frame.can_id == 0x580 + node_id)
+        if (frame.can_id == ELMO_COBID_SDO_RESPONSE + node_id)
         { // SDO response from node ID
             // Extract the data from the response
             value = frame.data[4];
@@ -442,7 +442,7 @@ int8_t elmo_can_read(int8_t s, int8_t node_id, int8_t &value, uint16_t timeout_m
         }
 
         // Check if the response is from the expected node
-        if (frame.can_id == 0x580 + node_id)
+        if (frame.can_id == ELMO_COBID_SDO_RESPONSE + node_id)
         { // SDO response from node ID
             // Extract the data from the response
             value = frame.data[4];
@@ -456,8 +456,8 @@ int8_t elmo_can_read(int8_t s, int8_t node_id, int8_t &value, uint16_t timeout_m
 int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex, uint32_t value)
 {
     struct can_frame frame;
-    frame.can_id = 0x600 + node_id; // SDO request to node ID
-    frame.can_dlc = 8;              // Data length for SDO request is 8
+    frame.can_id = ELMO_COBID_SDO_REQUEST + node_id; // SDO request to node ID
+    frame.can_dlc = 8;                               // Data length for SDO request is 8
 
     // SDO request to write the specified object
     frame.data[0] = 0x23;                 // Command byte: Initiate SDO download (write)
@@ -482,8 +482,8 @@ int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex
 int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex, int32_t value)
 {
     struct can_frame frame;
-    frame.can_id = 0x600 + node_id; // SDO request to node ID
-    frame.can_dlc = 8;              // Data length for SDO request is 8
+    frame.can_id = ELMO_COBID_SDO_REQUEST + node_id; // SDO request to node ID
+    frame.can_dlc = 8;                               // Data length for SDO request is 8
 
     // SDO request to write the specified object
     frame.data[0] = 0x23;                 // Command byte: Initiate SDO download (write)
@@ -508,8 +508,8 @@ int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex
 int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex, uint16_t value)
 {
     struct can_frame frame;
-    frame.can_id = 0x600 + node_id; // SDO request to node ID
-    frame.can_dlc = 6;              // Data length for SDO request is 8
+    frame.can_id = ELMO_COBID_SDO_REQUEST + node_id; // SDO request to node ID
+    frame.can_dlc = 6;                               // Data length for SDO request is 8
 
     // SDO request to write the specified object
     frame.data[0] = 0x23;                // Command byte: Initiate SDO download (write)
@@ -532,8 +532,8 @@ int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex
 int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex, int16_t value)
 {
     struct can_frame frame;
-    frame.can_id = 0x600 + node_id; // SDO request to node ID
-    frame.can_dlc = 6;              // Data length for SDO request is 8
+    frame.can_id = ELMO_COBID_SDO_REQUEST + node_id; // SDO request to node ID
+    frame.can_dlc = 6;                               // Data length for SDO request is 8
 
     // SDO request to write the specified object
     frame.data[0] = 0x23;                // Command byte: Initiate SDO download (write)
@@ -556,8 +556,8 @@ int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex
 int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex, uint8_t value)
 {
     struct can_frame frame;
-    frame.can_id = 0x600 + node_id; // SDO request to node ID
-    frame.can_dlc = 5;              // Data length for SDO request is 8
+    frame.can_id = ELMO_COBID_SDO_REQUEST + node_id; // SDO request to node ID
+    frame.can_dlc = 5;                               // Data length for SDO request is 8
 
     // SDO request to write the specified object
     frame.data[0] = 0x23;                // Command byte: Initiate SDO download (write)
@@ -579,8 +579,8 @@ int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex
 int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex, int8_t value)
 {
     struct can_frame frame;
-    frame.can_id = 0x600 + node_id; // SDO request to node ID
-    frame.can_dlc = 5;              // Data length for SDO request is 8
+    frame.can_id = ELMO_COBID_SDO_REQUEST + node_id; // SDO request to node ID
+    frame.can_dlc = 5;                               // Data length for SDO request is 8
 
     // SDO request to write the specified object
     frame.data[0] = 0x23;                // Command byte: Initiate SDO download (write)
@@ -602,8 +602,8 @@ int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex
 int8_t elmo_can_send_BG_DLC4(int8_t s, int8_t node_id)
 {
     struct can_frame frame;
-    frame.can_id = 0x600 + node_id; // SDO request to node ID
-    frame.can_dlc = 4;              // Data length for SDO request is 8
+    frame.can_id = ELMO_COBID_SDO_REQUEST + node_id; // SDO request to node ID
+    frame.can_dlc = 4;                               // Data length for SDO request is 8
 
     // SDO write request to set the specified object
     frame.data[0] = 0x42; // Command byte: Initiate SDO download (write)
@@ -623,27 +623,27 @@ int8_t elmo_can_send_BG_DLC4(int8_t s, int8_t node_id)
 
 int8_t elmo_can_set_target_velocity(int8_t s, int8_t node_id, uint32_t target_vel)
 {
-    return elmo_can_write(s, node_id, 0x60FF, 0x00, target_vel);
+    return elmo_can_write(s, node_id, ELMO_TARGET_VELOCITY, 0x00, target_vel);
 }
 
 int8_t elmo_can_set_target_position(int8_t s, int8_t node_id, uint32_t target_pos)
 {
-    return elmo_can_write(s, node_id, 0x607A, 0x00, target_pos);
+    return elmo_can_write(s, node_id, ELMO_TARGET_POSITION, 0x00, target_pos);
 }
 
 int8_t elmo_can_set_mode_op(int8_t s, int8_t node_id, int8_t mode_op)
 {
-    return elmo_can_write(s, node_id, 0x6060, 0x00, mode_op);
+    return elmo_can_write(s, node_id, ELMO_MODES_OF_OPERATION, 0x00, mode_op);
 }
 
 int8_t elmo_can_send_config_obj(int8_t s, int8_t node_id, uint32_t conf_obj)
 {
-    return elmo_can_write(s, node_id, 0x2F41, 0x00, conf_obj);
+    return elmo_can_write(s, node_id, ELMO_CONFIG_OBJECT, 0x00, conf_obj);
 }
 
 int32_t elmo_can_get_enc_px(int8_t s, int8_t node_id)
 {
-    if (elmo_can_read_req(s, node_id, 0x6063, 0x00) < 0)
+    if (elmo_can_read_req(s, node_id, ELMO_ACTUAL_POSITION, 0x00) < 0)
     {
         return -1;
     }
@@ -659,7 +659,7 @@ int32_t elmo_can_get_enc_px(int8_t s, int8_t node_id)
 
 int32_t elmo_can_get_enc_vx(int8_t s, int8_t node_id)
 {
-    if (elmo_can_read_req(s, node_id, 0x606C, 0x00) < 0)
+    if (elmo_can_read_req(s, node_id, ELMO_ACTUAL_VELOCITY, 0x00) < 0)
     {
         return -1;
     }
@@ -678,14 +678,14 @@ int8_t elmo_can_ignore_ls(int8_t s, int8_t node_id) // Ignore limit switch
     // Baca SIMPLIQ COMMAND IL[N] IP IB[N]
     // Menggunakan RPDO2 (COB-ID 0x300)
     struct can_frame frame;
-    frame.can_id = 0x300 + node_id; // RPDO2 request to node ID
-    frame.can_dlc = 8;              // Data length for RPDO2 request is 8
+    frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+    frame.can_dlc = 8;                         // Data length for RPDO2 request is 8
 
     // IL[4]=4
-    frame.data[0] = 0x49; // Command byte: Initiate RPDO2 download (write)
-    frame.data[1] = 0x4c; // Index (low byte)
-    frame.data[2] = 0x04; // Index (high byte)
-    frame.data[3] = 0x00; // Sub-index
+    frame.data[0] = 0x49; // i
+    frame.data[1] = 0x4c; // l
+    frame.data[2] = 0x04; // Index (Low byte)
+    frame.data[3] = 0x00; // Index (High byte)
     frame.data[4] = 0x04; // Data (low byte)
     frame.data[5] = 0x00; // Data (second byte)
     frame.data[6] = 0x00; // Data (third byte)
@@ -701,8 +701,8 @@ int8_t elmo_can_ignore_ls(int8_t s, int8_t node_id) // Ignore limit switch
     usleep(1000);
 
     struct can_frame frame2;
-    frame2.can_id = 0x300 + node_id; // RPDO2 request to node ID
-    frame2.can_dlc = 8;              // Data length for RPDO2 request is 8
+    frame2.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+    frame2.can_dlc = 8;                         // Data length for RPDO2 request is 8
 
     // IL[3]=4
     frame2.data[0] = 0x49; // 'i'
@@ -726,7 +726,7 @@ int8_t elmo_can_ignore_ls(int8_t s, int8_t node_id) // Ignore limit switch
 
 uint16_t elmo_can_set_s_word(int8_t s, int8_t node_id)
 {
-    if (elmo_can_read_req(s, node_id, 0x6041, 0x00) < 0)
+    if (elmo_can_read_req(s, node_id, ELMO_STATUSWORD, 0x00) < 0)
     {
         return -1;
     }
@@ -742,7 +742,7 @@ uint16_t elmo_can_set_s_word(int8_t s, int8_t node_id)
 
 int8_t elmo_can_set_c_word(int8_t s, int8_t node_id, uint16_t c_word)
 {
-    return elmo_can_write(s, node_id, 0x6040, 0x00, c_word);
+    return elmo_can_write(s, node_id, ELMO_CONTROLWORD, 0x00, c_word);
 }
 
 int8_t elmo_init_motor(int8_t s, int8_t node_id, uint8_t mode)
@@ -795,14 +795,29 @@ int8_t elmo_init_motor(int8_t s, int8_t node_id, uint8_t mode)
     usleep(5000);
 
     // Set Control word (Baca DS-402) (Mengaktifkan driver untuk kontrol motor)
-    if (elmo_can_set_c_word(s, node_id, 0b1111) < 0)
+    if (mode == ELMO_VELOCITY_MODE)
     {
+        if (elmo_can_set_c_word(s, node_id, 0b1111) < 0)
+        {
+            return -8;
+        }
+    }
+    else if (mode == ELMO_TORQUE_MODE)
+    {
+        if (elmo_can_set_c_word(s, node_id, 0b000001111) < 0) // + halt
+        {
+            return -8;
+        }
+    }
+    else if (mode == ELMO_POSITION_MODE)
+    {
+        // I'm too lazy to create this mode, just refer to the manual DS-401 in Chapter 11 especially 11.1
         return -8;
     }
     usleep(5000);
 
     // SAFETY
-    if (mode == 0x03)
+    if (mode == ELMO_VELOCITY_MODE)
     {
         elmo_can_set_target_velocity(s, node_id, 0);
     }
@@ -812,4 +827,30 @@ int8_t elmo_init_motor(int8_t s, int8_t node_id, uint8_t mode)
     elmo_can_send_BG_DLC4(s, node_id);
 
     return 0;
+}
+
+int8_t elmo_can_set_target_torque(int8_t s, int8_t node_id, int16_t torque)
+{
+    return elmo_can_write(s, node_id, ELMO_TARGET_TORQUE, 0x00, torque);
+}
+
+uint32_t elmo_can_get_motor_rate_current(int8_t s, int8_t node_id)
+{
+    if (elmo_can_read_req(s, node_id, ELMO_MOTOR_RATE_CURRENT, 0x00) < 0)
+    {
+        return -1;
+    }
+
+    uint32_t motor_rate_current;
+    if (elmo_can_read(s, node_id, motor_rate_current, 1000) < 0)
+    {
+        return -2;
+    }
+
+    return motor_rate_current;
+}
+
+int8_t elmo_can_set_quick_stop(int8_t s, int8_t node_id, int16_t quick_stop)
+{
+    return elmo_can_write(s, node_id, ELMO_QUICK_STOP_OPTION_CODE, 0x00, quick_stop);
 }
