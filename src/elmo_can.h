@@ -29,6 +29,19 @@
 #define ELMO_TORQUE_MODE 0x04
 #define ELMO_HOMING_MODE 0x06
 
+#define ELMO_BITRATE_1M 0x00
+#define ELMO_BITRATE_500K 0x01
+#define ELMO_BITRATE_250K 0x02
+
+#define ELMO_PI_CURRENT_CONTROL 0x01
+#define ELMO_PI_VELOCITY_CONTROL 0x02
+
+#define ELMO_NMT_START 0x01
+#define ELMO_NMT_STOP 0x02
+#define ELMO_NMT_PREOP 0x80
+#define ELMO_NMT_RESET 0x81
+#define ELMO_NMT_RESET_COMM 0x82
+
 /* Tools */
 int8_t elmo_can_ping_all(int8_t s, int8_t *nodes, uint16_t timeout_ms = 1000);
 int8_t elmo_can_ping(int8_t s, uint8_t node_id, uint16_t timeout_ms = 1000);
@@ -70,6 +83,9 @@ int8_t elmo_init_motor(int8_t s, int8_t node_id, uint8_t mode = ELMO_VELOCITY_MO
 int8_t elmo_can_set_mode_op(int8_t s, int8_t node_id, int8_t mode_op);
 int8_t elmo_can_send_config_obj(int8_t s, int8_t node_id, uint32_t conf_obj);
 int8_t elmo_can_ignore_ls(int8_t s, int8_t node_id); // Ignore limit switch
+int8_t elmo_can_set_node_id(int8_t s, int8_t node_id, int8_t new_node_id);
+int8_t elmo_can_set_bitrate(int8_t s, int8_t node_id, int8_t bitrate);
+int8_t elmo_can_save_config(int8_t s, int8_t node_id);
 
 int8_t elmo_can_set_quick_stop(int8_t s, int8_t node_id, int16_t quick_stop);
 int8_t elmo_can_set_c_word(int8_t s, int8_t node_id, uint16_t c_word);

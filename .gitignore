@@ -1,3 +1,5 @@
 build
 example/speed 
 example/torq
+example/ping_all 
+example/configureElmo

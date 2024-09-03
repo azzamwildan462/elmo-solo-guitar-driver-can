@@ -854,3 +854,101 @@ int8_t elmo_can_set_quick_stop(int8_t s, int8_t node_id, int16_t quick_stop)
 {
     return elmo_can_write(s, node_id, ELMO_QUICK_STOP_OPTION_CODE, 0x00, quick_stop);
 }
+
+int8_t elmo_can_set_node_id(int8_t s, int8_t node_id, int8_t new_node_id)
+{
+    // PP[13] = new_node_id
+    // Menggunakan RPDO2 (COB-ID 0x300)
+    struct can_frame frame;
+    frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+    frame.can_dlc = 8;                         // Data length for RPDO2 request is 8
+
+    // PP[13] = new_node_id
+    frame.data[0] = 0x50;        // 'P'
+    frame.data[1] = 0x50;        // 'P'
+    frame.data[2] = 0x0D;        // LSB index
+    frame.data[3] = 0x00;        // MSB index
+    frame.data[4] = new_node_id; // Value (low byte)
+    frame.data[5] = 0x00;        // Value (second byte)
+    frame.data[6] = 0x00;        // Value (third byte)
+    frame.data[7] = 0x00;        // Value (high byte)
+
+    // Send the RPDO2 write request
+    if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+    {
+        perror("Write");
+        return -1;
+    }
+
+    return 0;
+}
+int8_t elmo_can_set_bitrate(int8_t s, int8_t node_id, int8_t bitrate)
+{
+    // PP[14] = bitrate (0: 1000 kbps, 1: 800 kbps, 2: 500 kbps, 3: 250 kbps, 4: 125 kbps, 5: 50 kbps, 6: 20 kbps, 7: 10 kbps)
+    // Menggunakan RPDO2 (COB-ID 0x300)
+    struct can_frame frame;
+    frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+    frame.can_dlc = 8;                         // Data length for RPDO2 request is 8
+
+    // PP[14] = bitrate
+    frame.data[0] = 0x50;    // 'P'
+    frame.data[1] = 0x50;    // 'P'
+    frame.data[2] = 0x0E;    // LSB index
+    frame.data[3] = 0x00;    // MSB index
+    frame.data[4] = bitrate; // Value (low byte)
+    frame.data[5] = 0x00;    // Value (second byte)
+    frame.data[6] = 0x00;    // Value (third byte)
+    frame.data[7] = 0x00;    // Value (high byte)
+
+    // Send the RPDO2 write request
+    if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+    {
+        perror("Write");
+        return -1;
+    }
+
+    return 0;
+}
+
+int8_t elmo_can_save_config(int8_t s, int8_t node_id)
+{
+    {
+        struct can_frame frame;
+        frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+        frame.can_dlc = 4;                         // Data length for RPDO2 request is 8
+
+        // HP
+        frame.data[0] = 0x48; // 'H'
+        frame.data[1] = 0x50; // 'P'
+        frame.data[2] = 0x00; // LSB index
+        frame.data[3] = 0x00; // MSB index
+
+        // Send the CAN frame
+        if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+        {
+            perror("Write");
+            return 1;
+        }
+    }
+
+    {
+        struct can_frame frame;
+        frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+        frame.can_dlc = 4;                         // Data length for RPDO2 request is 8
+
+        // SV
+        frame.data[0] = 0x53; // 'S'
+        frame.data[1] = 0x56; // 'V'
+        frame.data[2] = 0x00; // LSB index
+        frame.data[3] = 0x00; // MSB index
+
+        // Send the CAN frame
+        if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+        {
+            perror("Write");
+            return 1;
+        }
+    }
+
+    return 0;
+}
