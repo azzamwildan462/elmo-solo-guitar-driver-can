@@ -4,8 +4,8 @@
 
 int main()
 {
-    int8_t node_id = 0x07;
-    int8_t s = elmo_can_init("can2");
+    int8_t node_id = 0x09;
+    int8_t s = elmo_can_init("can0");
 
     printf("Press 'k' to init motor\n");
     while (1)
@@ -20,46 +20,8 @@ int main()
             {
             case 'q':
             {
-                elmo_can_set_node_id(s, node_id, 0x08);
-
-                {
-                    struct can_frame frame;
-                    frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
-                    frame.can_dlc = 4;                         // Data length for RPDO2 request is 8
-
-                    // HP
-                    frame.data[0] = 0x48; // 'H'
-                    frame.data[1] = 0x50; // 'P'
-                    frame.data[2] = 0x00; // LSB index
-                    frame.data[3] = 0x00; // MSB index
-
-                    // Send the CAN frame
-                    if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
-                    {
-                        perror("Write");
-                        return 1;
-                    }
-                }
-
-                {
-                    struct can_frame frame;
-                    frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
-                    frame.can_dlc = 4;                         // Data length for RPDO2 request is 8
-
-                    // SV
-                    frame.data[0] = 0x53; // 'S'
-                    frame.data[1] = 0x56; // 'V'
-                    frame.data[2] = 0x00; // LSB index
-                    frame.data[3] = 0x00; // MSB index
-
-                    // Send the CAN frame
-                    if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
-                    {
-                        perror("Write");
-                        return 1;
-                    }
-                }
-
+                elmo_can_set_node_id(s, node_id, 0x09);
+                elmo_can_save_config(s, node_id);
                 printf("Node ID changed to 0x10, waiting...\n");
                 usleep(100000);
                 elmo_can_send_NMT(s, 0x82, node_id);
@@ -114,7 +76,14 @@ int main()
                 break;
 
             case 'w':
-                elmo_can_set_c_word(s, node_id, 0b0111);
+                // elmo_can_set_c_word(s, node_id, 0b0111);
+                elmo_can_set_bitrate(s, node_id, 0x00);
+                elmo_can_save_config(s, node_id);
+                printf("WAIT...\n");
+                usleep(1000000);
+                elmo_can_send_NMT(s, ELMO_NMT_RESET_COMM, node_id);
+                printf("DONE\n");
+
                 break;
 
             case 'a':
