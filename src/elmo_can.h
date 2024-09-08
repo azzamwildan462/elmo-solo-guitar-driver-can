@@ -54,9 +54,15 @@ uint8_t elmo_can_handle_heartbeat(const struct can_frame *frame);
 
 /* MISC */
 int8_t elmo_can_clear_recv_buffer(int8_t s);
+int8_t elmo_can_clear_write_buffer(int8_t s);
 
 /* CAN */
 int8_t elmo_can_init(const char *interface);
+
+/* PDO Utils */
+int8_t elmo_can_send_sync(int8_t s);
+int8_t elmo_can_setup_RPDO(int8_t s, int8_t node_id, uint16_t cob_id, uint8_t sync_type, uint32_t target_addr_map);
+int8_t elmo_can_setup_TPDO(int8_t s, int8_t node_id, uint16_t cob_id, uint8_t sync_type, uint32_t target_addr_map);
 
 /* SDO READ */
 int8_t elmo_can_read_req(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex);

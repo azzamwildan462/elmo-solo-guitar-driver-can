@@ -667,7 +667,7 @@ int32_t elmo_can_get_enc_vx(int8_t s, int8_t node_id)
     int32_t enc_vx;
     if (elmo_can_read(s, node_id, enc_vx, 1000) < 0)
     {
-        return -1;
+        return -2;
     }
 
     return enc_vx;
@@ -731,8 +731,8 @@ uint16_t elmo_can_set_s_word(int8_t s, int8_t node_id)
         return -1;
     }
 
-    uint16_t s_word;
-    if (elmo_can_read(s, node_id, s_word, 1000) < 0)
+    uint16_t s_word = -3;
+    if (elmo_can_read(s, node_id, s_word, 10) < 0)
     {
         return -2;
     }
@@ -951,4 +951,73 @@ int8_t elmo_can_save_config(int8_t s, int8_t node_id)
     }
 
     return 0;
+}
+
+int8_t elmo_can_clear_write_buffer(int8_t s)
+{
+    int sndbuf_size = 0; // Set to zero to clear
+    if (setsockopt(s, SOL_SOCKET, SO_SNDBUF, &sndbuf_size, sizeof(sndbuf_size)) < 0)
+    {
+        perror("setsockopt");
+        return -1;
+    }
+
+    return 0;
+}
+
+int8_t elmo_can_send_sync(int8_t s)
+{
+    struct can_frame frame;
+    frame.can_id = ELMO_COBID_SYNC; // SYNC message
+    frame.can_dlc = 0;              // Data length for SYNC message is 0
+
+    // Send the SYNC message
+    if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+    {
+        perror("Write");
+        return -1;
+    }
+
+    return 0;
+}
+
+int8_t elmo_can_setup_RPDO(int8_t s, int8_t node_id, uint16_t cob_id, uint8_t sync_type, uint32_t target_addr_map)
+{
+    // Set up the RPDO communication parameters
+
+    // Stop all emissions on RPDO1
+    elmo_can_write(s, node_id, 0x1600, 0x00, 0x00000000);
+
+    // Map target_addr_map to RPDO1
+    elmo_can_write(s, node_id, 0x1600, 0x01, target_addr_map);
+
+    // Set the RPDO1 communication parameters SYNC type
+    elmo_can_write(s, node_id, 0x1400, 0x02, sync_type);
+
+    // Activate RPDO1
+    elmo_can_write(s, node_id, 0x1600, 0x00, 0x01);
+}
+
+int8_t elmo_can_setup_TPDO(int8_t s, int8_t node_id, uint16_t cob_id, uint8_t sync_type, uint32_t target_addr_map)
+{
+    // Disable TDPO1
+    elmo_can_write(s, node_id, 0x1800, 0x01, (uint32_t)0x80000000);
+
+    // set COB-id for TPDO1
+    elmo_can_write(s, node_id, 0x1800, 0x01, (uint32_t)(0x400001FF));
+
+    // Stop all emissions on RPDO1
+    elmo_can_write(s, node_id, 0x1A00, 0x00, 0x00000000);
+
+    // Map target_addr_map to RPDO1
+    elmo_can_write(s, node_id, 0x1A00, 0x01, target_addr_map);
+
+    // Set the RPDO1 communication parameters SYNC type
+    elmo_can_write(s, node_id, 0x1800, 0x02, sync_type);
+
+    // Activate RPDO1
+    elmo_can_write(s, node_id, 0x1A00, 0x00, 0x01);
+
+    // // Re-enable TPDO1
+    elmo_can_write(s, node_id, 0x1800, 0x01, (uint32_t)(0x400001FF));
 }

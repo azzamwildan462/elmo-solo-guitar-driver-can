@@ -19,8 +19,8 @@ float rpm2cps(float rpm)
 
 int main()
 {
-    int8_t node_id = 0x07;
-    int8_t s = elmo_can_init("can2");
+    int8_t node_id = 0x09;
+    int8_t s = elmo_can_init("can0");
 
     printf("Press 'k' to init motor\n");
     while (1)

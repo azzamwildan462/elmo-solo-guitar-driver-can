@@ -7,8 +7,8 @@
 
 #include <rd-kits/keyboard_input.h>
 
-#define KP 0.001
-#define KI 0.00001
+#define KP 0.0055 // 0.005
+#define KI 0.001  // 0.00042
 
 int32_t enc_now = 0;
 float target_vel = 0;
@@ -32,18 +32,18 @@ int32_t set_velocity()
 
     output = KP * error + integral;
 
-    if (output > 50)
-        output = 50;
-    else if (output < -50)
-        output = -50;
+    if (output > 400)
+        output = 400;
+    else if (output < -400)
+        output = -400;
 
     return (int32_t)output;
 }
 
 int main()
 {
-    int8_t node_id = 0x07;
-    int8_t s = elmo_can_init("can2");
+    int8_t node_id = 0x0A;
+    int8_t s = elmo_can_init("can0");
 
     printf("Press 'k' to init motor\n");
     while (1)
@@ -92,7 +92,7 @@ int main()
             }
 
             case 't':
-                elmo_can_write(s, node_id, ELMO_TORQUE_SLOPE, 0, 40);
+                elmo_can_write(s, node_id, ELMO_TORQUE_SLOPE, 0, 80);
                 break;
 
             case ' ':
@@ -111,6 +111,12 @@ int main()
                 break;
             case 'j':
                 target_vel = -22000;
+                break;
+            case '-':
+                target_vel = -70000;
+                break;
+            case '=':
+                target_vel = 70000;
                 break;
             case 'n':
                 elmo_can_set_quick_stop(s, node_id, 0x0000);
@@ -131,6 +137,14 @@ int main()
                 break;
             }
 
+            case ']':
+            {
+                uint32_t stts = elmo_can_read_req(s, node_id, 0x6502, 0);
+                elmo_can_read(s, node_id, stts, 1000);
+                printf("st %d\n", stts);
+            }
+            break;
+
             case '0':
                 elmo_can_send_NMT(s, 0x81, node_id);
                 break;
@@ -140,21 +154,43 @@ int main()
         }
 
         enc_now = elmo_can_get_enc_vx(s, node_id);
+
+        if (enc_now == -1)
+            continue;
+
         int32_t target_torque = set_velocity();
         elmo_can_set_target_torque(s, node_id, target_torque);
 
-        {
-            int16_t torq_6077 = elmo_can_read_req(s, node_id, ELMO_ACTUAL_TORQUE, 0);
-            elmo_can_read(s, node_id, torq_6077, 1000);
+        printf("ENC NOW ATAS %d %d\n", enc_now, target_torque);
 
-            int16_t cur_6078 = elmo_can_read_req(s, node_id, ELMO_ACTUAL_CURRENT, 0);
-            elmo_can_read(s, node_id, cur_6078, 1000);
+        // elmo_can_clear_recv_buffer(s);
 
-            printf("%d %d %d || %d\n", enc_now, torq_6077, cur_6078, target_torque);
-        }
+        // {
+        //     int16_t torq_6077 = elmo_can_read_req(s, node_id, ELMO_ACTUAL_TORQUE, 0);
+        //     elmo_can_read(s, node_id, torq_6077, 1000);
 
-        usleep(100 * 1e3);
+        //     elmo_can_clear_recv_buffer(s);
+
+        //     int16_t cur_6078 = elmo_can_read_req(s, node_id, ELMO_ACTUAL_CURRENT, 0);
+        //     elmo_can_read(s, node_id, cur_6078, 1000);
+
+        //     elmo_can_clear_recv_buffer(s);
+
+        //     printf("%d %d %d || %d\n", enc_now, torq_6077, cur_6078, target_torque);
+        // }
+
+        usleep(10 * 1e3);
     }
 
     return 0;
 }
+
+/**
+ *
+ * FEEDBACK e enc_now
+ * OUTPUT e target_torque
+ *
+ *
+ *
+ *
+ */

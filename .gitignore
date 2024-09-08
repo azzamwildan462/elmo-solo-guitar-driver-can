@@ -3,3 +3,6 @@ example/speed
 example/torq
 example/ping_all 
 example/configureElmo
+example/inverseKinematic
+example/torqInversKinematic
+example/up_iface
