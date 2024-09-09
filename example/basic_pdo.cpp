@@ -24,9 +24,23 @@ int main()
             {
             case 'k':
             {
-                int8_t stts0 = elmo_init_motor(s, node_id[0], ELMO_TORQUE_MODE);
-                // int8_t stts1 = elmo_init_motor(s, node_id[1], ELMO_TORQUE_MODE);
-                // int8_t stts2 = elmo_init_motor(s, node_id[2], ELMO_TORQUE_MODE);
+                elmo_can_setup_TPDO(s, node_id[0], 0x200, 0x01, 0x60690020);
+                usleep(5000);
+                elmo_can_setup_TPDO(s, node_id[1], 0x200, 0x01, 0x60690020);
+                usleep(5000);
+                elmo_can_setup_TPDO(s, node_id[2], 0x200, 0x01, 0x60690020);
+                usleep(5000);
+
+                elmo_can_setup_RPDO(s, node_id[0], 0x200, 0x01, 0x60FF0020);
+                usleep(5000);
+                elmo_can_setup_RPDO(s, node_id[1], 0x200, 0x01, 0x60FF0020);
+                usleep(5000);
+                elmo_can_setup_RPDO(s, node_id[2], 0x200, 0x01, 0x60FF0020);
+                usleep(5000);
+
+                int8_t stts0 = elmo_init_motor(s, node_id[0], ELMO_VELOCITY_MODE);
+                int8_t stts1 = elmo_init_motor(s, node_id[1], ELMO_VELOCITY_MODE);
+                int8_t stts2 = elmo_init_motor(s, node_id[2], ELMO_VELOCITY_MODE);
                 printf("Init motor: %d \n", stts0);
                 break;
             }
@@ -63,16 +77,20 @@ int main()
                 break;
 
             case 'd':
-                elmo_can_setup_RPDO(s, node_id[0], 0x200, 0, 0x60400010);
+                elmo_can_setup_RPDO(s, node_id[0], 0x200, 0, 0x60FF0020);
                 break;
 
             case 'w':
+                elmo_can_set_target_velocity_sync(s, node_id[0], 4000);
+                elmo_can_set_target_velocity_sync(s, node_id[1], 4000);
+                elmo_can_set_target_velocity_sync(s, node_id[2], 4000);
+
                 break;
 
             case '0':
                 elmo_can_send_NMT(s, 0x81, node_id[0]);
-                // elmo_can_send_NMT(s, 0x81, node_id[1]);
-                // elmo_can_send_NMT(s, 0x81, node_id[2]);
+                elmo_can_send_NMT(s, 0x81, node_id[1]);
+                elmo_can_send_NMT(s, 0x81, node_id[2]);
                 break;
             case '1':
                 elmo_can_send_NMT(s, 0x00, node_id[0]);

@@ -2,6 +2,9 @@
 #include <math.h>
 #include <rd-kits/keyboard_input.h>
 
+#include "rd-kits/keyboard_input.h"
+#include "rd-kits/stdout_with_colour.h"
+
 #define BAUD_RATE 57600
 #define DEG2RAD *0.017452925
 #define RAD2DEG *57.295780
@@ -61,8 +64,6 @@ int32_t set_velocity_left()
     else if (integral < -MAX_I)
         integral = -MAX_I;
 
-    // printf("%.2f %.2f %.2f\n", error, integral, output);
-
     output = KP * error + integral;
 
     if (output > MAX_O)
@@ -87,8 +88,6 @@ int32_t set_velocity_right()
         integral = MAX_I;
     else if (integral < -MAX_I)
         integral = -MAX_I;
-
-    // printf("%.2f %.2f %.2f\n", error, integral, output);
 
     output = KP * error + integral;
 
@@ -115,8 +114,6 @@ int32_t set_velocity_rear()
     else if (integral < -MAX_I)
         integral = -MAX_I;
 
-    // printf("%.2f %.2f %.2f\n", error, integral, output);
-
     output = KP * error + integral;
 
     if (output > MAX_O)
@@ -129,9 +126,10 @@ int32_t set_velocity_rear()
 
 int main()
 {
+    LogWithColor(COLOR_CYAN, "Press 'k' to init motor\n");
+
     int8_t s = elmo_can_init("can0");
 
-    printf("Press 'k' to init motor\n");
     while (1)
     {
         elmo_can_clear_recv_buffer(s);
@@ -144,12 +142,67 @@ int main()
             {
             case 'k':
             {
+                elmo_can_setup_TPDO(s, node_id[0], 0x200, 0x01, 0x60690020);
+                usleep(5000);
+                elmo_can_setup_TPDO(s, node_id[1], 0x200, 0x01, 0x60690020);
+                usleep(5000);
+                elmo_can_setup_TPDO(s, node_id[2], 0x200, 0x01, 0x60690020);
+                usleep(5000);
+
+                elmo_can_setup_RPDO(s, node_id[0], 0x200, 0x01, 0x60710010);
+                usleep(5000);
+                elmo_can_setup_RPDO(s, node_id[1], 0x200, 0x01, 0x60710010);
+                usleep(5000);
+                elmo_can_setup_RPDO(s, node_id[2], 0x200, 0x01, 0x60710010);
+                usleep(5000);
+
                 int8_t stts0 = elmo_init_motor(s, node_id[0], ELMO_TORQUE_MODE);
                 int8_t stts1 = elmo_init_motor(s, node_id[1], ELMO_TORQUE_MODE);
                 int8_t stts2 = elmo_init_motor(s, node_id[2], ELMO_TORQUE_MODE);
-                printf("Init motor: %d %d %d\n", stts0, stts1, stts2);
+                printf("Init motor: %d \n", stts0);
                 break;
             }
+
+            case 'c':
+            {
+                uint16_t stts = elmo_can_read_req(s, node_id[0], 0x1800, 2);
+                elmo_can_read(s, node_id[0], stts, 1000);
+                printf("Transmission type: %x\n", stts);
+                break;
+            }
+
+            case 'v':
+            {
+                uint16_t stts = elmo_can_read_req(s, node_id[0], 0x1800, 2);
+                elmo_can_read(s, node_id[0], stts, 1000);
+                printf("COB-ID used: %d\n", stts);
+                break;
+            }
+
+            case 'x':
+            {
+                uint32_t stts = elmo_can_read_req(s, node_id[0], 0x1005, 0);
+                elmo_can_read(s, node_id[0], stts, 1000);
+                printf("COB-ID SYNC: %x\n", stts);
+                break;
+            }
+            case 'a':
+                elmo_can_send_sync(s);
+                break;
+
+            case 's':
+                elmo_can_setup_TPDO(s, node_id[0], 0x200, 0x01, 0x60690020);
+                break;
+
+            case 'd':
+                elmo_can_setup_RPDO(s, node_id[0], 0x200, 0, 0x60710020);
+                break;
+
+            case 'w':
+                elmo_can_set_target_torque_sync(s, node_id[0], (int16_t)40);
+                elmo_can_set_target_torque_sync(s, node_id[1], (int16_t)40);
+                elmo_can_set_target_torque_sync(s, node_id[2], (int16_t)40);
+                break;
 
             case '0':
                 elmo_can_send_NMT(s, 0x81, node_id[0]);
@@ -177,72 +230,7 @@ int main()
                 node_id_sword[0] = elmo_can_set_s_word(s, node_id[0]);
                 node_id_sword[1] = elmo_can_set_s_word(s, node_id[1]);
                 node_id_sword[2] = elmo_can_set_s_word(s, node_id[2]);
-                printf("S-Word: %d %d %d\n", node_id_sword[0], node_id_sword[1], node_id_sword[2]);
-                break;
-            }
-
-            case 't':
-                elmo_can_write(s, node_id[0], ELMO_TORQUE_SLOPE, 0, 2001);
-                elmo_can_write(s, node_id[1], ELMO_TORQUE_SLOPE, 0, 2001);
-                elmo_can_write(s, node_id[2], ELMO_TORQUE_SLOPE, 0, 2001);
-                break;
-
-            case 'x':
-            {
-                // uint32_t stts = elmo_can_read_req(s, node_id[0], 0x607F, 0);
-                // elmo_can_read(s, node_id[0], stts, 1000);
-                elmo_can_write(s, node_id[0], 0x607F, 0, (int32_t)40000000);
-                // printf("ER603f: %d\n", stts);
-                break;
-            }
-
-            case 'c':
-            {
-                uint16_t stts = elmo_can_read_req(s, node_id[0], ELMO_ERROR_CODE_402, 0);
-                elmo_can_read(s, node_id[0], stts, 1000);
-                printf("ER603f: %x\n", stts);
-                break;
-            }
-
-            case 'v':
-            {
-                uint16_t stts = elmo_can_read_req(s, node_id[1], ELMO_ERROR_CODE_402, 0);
-                elmo_can_read(s, node_id[1], stts, 1000);
-                printf("ER603f: %x\n", stts);
-                break;
-            }
-
-            case 'b':
-            {
-                uint16_t stts = elmo_can_read_req(s, node_id[2], ELMO_ERROR_CODE_402, 0);
-                elmo_can_read(s, node_id[2], stts, 1000);
-                printf("ER603f: %x\n", stts);
-                break;
-            }
-
-            case ' ':
-            {
-                // elmo_can_set_target_torque(s, node_id[0], (int16_t)0);
-                // elmo_can_set_target_torque(s, node_id[1], (int16_t)0);
-                // elmo_can_set_target_torque(s, node_id[2], (int16_t)0);
-                vel_y_robot = 0;
-                vel_x_robot = 0;
-                vel_theta_robot = 0;
-
-                break;
-            }
-
-            case 'y':
-                elmo_can_set_target_torque(s, node_id[0], (int16_t)40);
-                elmo_can_set_target_torque(s, node_id[1], (int16_t)40);
-                elmo_can_set_target_torque(s, node_id[2], (int16_t)40);
-                break;
-
-            case 'o':
-            {
-                vel_y_robot = 0;
-                vel_x_robot = 0;
-                vel_theta_robot = 160;
+                printf("S-Word: %d\n", node_id_sword[0]);
                 break;
             }
 
@@ -250,39 +238,7 @@ int main()
             {
                 vel_y_robot = 0;
                 vel_x_robot = 0;
-                vel_theta_robot = -160;
-                break;
-            }
-
-            case 'w':
-            {
-                vel_y_robot = 160;
-                vel_x_robot = 0;
-                vel_theta_robot = 0;
-                break;
-            }
-
-            case 'a':
-            {
-                vel_y_robot = 0;
-                vel_x_robot = -160;
-                vel_theta_robot = 0;
-                break;
-            }
-
-            case 's':
-            {
-                vel_y_robot = -160;
-                vel_x_robot = 0;
-                vel_theta_robot = 0;
-                break;
-            }
-
-            case 'd':
-            {
-                vel_y_robot = 0;
-                vel_x_robot = 160;
-                vel_theta_robot = 0;
+                vel_theta_robot = -30;
                 break;
             }
             }
@@ -296,40 +252,10 @@ int main()
         vel_right_motor = vel_right_motor / MOTOR_RADIUS * RAD2CNTS * 1;
         vel_rear_motor = vel_rear_motor / MOTOR_RADIUS * RAD2CNTS * 1; // 6959
 
-        // printf("%.2f %.2f %.2f | %.2f %.2f %.2f || %d %d %d\n", vel_x_robot, vel_y_robot, vel_theta_robot, vel_left_motor, vel_right_motor, vel_rear_motor,
-        //        node_id_sword[0], node_id_sword[1], node_id_sword[2]);
-
-        // elmo_can_clear_recv_buffer(s);
-        // static int32_t prev_enc_now_left = 0;
-        // enc_now_left = elmo_can_get_enc_vx(s, node_id[0]);
-        // if (enc_now_left == -1 || enc_now_left == -2)
-        //     enc_now_left = prev_enc_now_left;
-        // else
-        //     prev_enc_now_left = enc_now_left;
-
-        // elmo_can_clear_recv_buffer(s);
-        // static int32_t prev_enc_now_right = 0;
-        // enc_now_right = elmo_can_get_enc_vx(s, node_id[1]);
-        // if (enc_now_right == -1 || enc_now_right == -2)
-        //     enc_now_right = prev_enc_now_right;
-        // else
-        //     prev_enc_now_right = enc_now_right;
-
-        // elmo_can_clear_recv_buffer(s);
-        // static int32_t prev_enc_now_rear = 0;
-        // enc_now_rear = elmo_can_get_enc_vx(s, node_id[2]);
-        // if (enc_now_rear == -1 || enc_now_rear == -2)
-        //     enc_now_rear = prev_enc_now_rear;
-        // else
-        //     prev_enc_now_rear = enc_now_rear;
-
         elmo_can_clear_recv_buffer(s);
 
-        elmo_can_read_req(s, node_id[0], ELMO_ACTUAL_VELOCITY, 0x00);
-        elmo_can_read_req(s, node_id[1], ELMO_ACTUAL_VELOCITY, 0x00);
-        elmo_can_read_req(s, node_id[2], ELMO_ACTUAL_VELOCITY, 0x00);
+        elmo_can_send_sync(s);
 
-        // Ensure that encoder is always received
         {
             uint8_t cntr_ditemukan = 0;
             uint32_t cntr_jumlah = 0;
@@ -338,7 +264,6 @@ int main()
             node_id_sword[2] = 0;
             while (cntr_ditemukan < 3)
             {
-                // printf("hehe: %d %d\n", cntr_jumlah, cntr_ditemukan);
                 if (cntr_jumlah > 20)
                 {
                     printf("Timeout\n");
@@ -375,19 +300,19 @@ int main()
                 }
 
                 // Check if the response is from the expected node
-                if (frame.can_id == ELMO_COBID_SDO_RESPONSE + node_id[0])
+                if (frame.can_id == 0x180 + node_id[0])
                 {
                     node_id_sword[0] = 99;
                     enc_now_left = frame.data[4] | (frame.data[5] << 8) | (frame.data[6] << 16) | (frame.data[7] << 24);
                     cntr_ditemukan++;
                 }
-                else if (frame.can_id == ELMO_COBID_SDO_RESPONSE + node_id[1])
+                else if (frame.can_id == 0x180 + node_id[1])
                 {
                     node_id_sword[1] = 99;
                     enc_now_right = frame.data[4] | (frame.data[5] << 8) | (frame.data[6] << 16) | (frame.data[7] << 24);
                     cntr_ditemukan++;
                 }
-                else if (frame.can_id == ELMO_COBID_SDO_RESPONSE + node_id[2])
+                else if (frame.can_id == 0x180 + node_id[2])
                 {
                     node_id_sword[2] = 99;
                     enc_now_rear = frame.data[4] | (frame.data[5] << 8) | (frame.data[6] << 16) | (frame.data[7] << 24);
@@ -399,85 +324,28 @@ int main()
 
         if (node_id_sword[0] > 0)
         {
-            // if (enc_now_left == -1)
-            //     continue;
-
-            // if (enc_now_left != -1 && enc_now_left != -2 || 1)
-            // {
-            //     elmo_can_clear_recv_buffer(s);
-            // }
-            // int32_t target_torque = set_velocity_left();
-
             target_torque_left = set_velocity_left();
-            elmo_can_clear_write_buffer(s);
-            elmo_can_set_target_torque(s, node_id[0], target_torque_left);
+            // elmo_can_clear_write_buffer(s);
+            elmo_can_set_target_torque_sync(s, node_id[0], target_torque_left);
         }
         if (node_id_sword[1] > 0)
         {
-            // if (enc_now_right == -1)
-            //     continue;
-
-            // if (enc_now_right != -1 && enc_now_right != -2 || 1)
-            // {
-            //     elmo_can_clear_recv_buffer(s);
-            // }
-
             target_torque_right = set_velocity_right();
-            elmo_can_clear_write_buffer(s);
-            elmo_can_set_target_torque(s, node_id[1], target_torque_right);
+            // elmo_can_clear_write_buffer(s);
+            elmo_can_set_target_torque_sync(s, node_id[1], target_torque_right);
         }
         if (node_id_sword[2] > 0)
         {
-            // if (enc_now_rear == -1)
-            //     continue;
-            // if (enc_now_rear != -1 && enc_now_rear != -2 || 1)
-            // {
-            //     elmo_can_clear_recv_buffer(s);
-            // }
-
             target_torque_rear = set_velocity_rear();
-            elmo_can_clear_write_buffer(s);
-            elmo_can_set_target_torque(s, node_id[2], target_torque_rear);
+            // elmo_can_clear_write_buffer(s);
+            elmo_can_set_target_torque_sync(s, node_id[2], target_torque_rear);
         }
 
-        // printf("%d %d %d || %d %d %d\n", enc_now_left, enc_now_right, enc_now_rear, target_torque_left, target_torque_right, target_torque_rear);
+        elmo_can_send_sync(s);
+        // print encoder and target torque
+        printf("Enc: %d %d %d || target Torq: %d %d %d\n", enc_now_left, enc_now_right, enc_now_rear, target_torque_left, target_torque_right, target_torque_rear);
+
         usleep(10000); // 50 hz (WTF RMS lite?)
     }
     return 0;
 }
-// TESTING REHAN
-/*
-
-p1
-6108
-19176
-
-d = 19176 - 6108 = 13068
-
-p2
-19176
-32224
-
-d = 32224 - 19176 = 13048
-
-p3
-32224
-45224
-
-d = 45224 - 32224 = 13000
-
-p4
-45224
-58225
-
-d = 58225 - 45224 = 13001
-
-p5
-58225
-71360
-
-d = 71360 - 58225 = 13135
-
-mean = 13074.4
-
-*/

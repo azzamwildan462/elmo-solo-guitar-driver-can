@@ -99,14 +99,17 @@ uint16_t elmo_can_set_s_word(int8_t s, int8_t node_id);
 
 /* Postion Mode */
 int8_t elmo_can_set_target_position(int8_t s, int8_t node_id, uint32_t target_pos);
+int8_t elmo_can_set_target_position_sync(int8_t s, int8_t node_id, uint32_t target_pos);
 int32_t elmo_can_get_enc_px(int8_t s, int8_t node_id);
 
 /* Velocity Mode */
 int8_t elmo_can_set_target_velocity(int8_t s, int8_t node_id, uint32_t target_vel);
+int8_t elmo_can_set_target_velocity_sync(int8_t s, int8_t node_id, uint32_t target_vel);
 int32_t elmo_can_get_enc_vx(int8_t s, int8_t node_id);
 
 /* Torque Mode */
 int8_t elmo_can_set_target_torque(int8_t s, int8_t node_id, int16_t torque);
+int8_t elmo_can_set_target_torque_sync(int8_t s, int8_t node_id, int16_t torque);
 uint32_t elmo_can_get_motor_rate_current(int8_t s, int8_t node_id);
 
 #endif // ELMO_CAN_H

@@ -626,9 +626,57 @@ int8_t elmo_can_set_target_velocity(int8_t s, int8_t node_id, uint32_t target_ve
     return elmo_can_write(s, node_id, ELMO_TARGET_VELOCITY, 0x00, target_vel);
 }
 
+int8_t elmo_can_set_target_velocity_sync(int8_t s, int8_t node_id, uint32_t target_vel)
+{
+    struct can_frame frame;
+    frame.can_id = 0x200 + node_id; //
+    frame.can_dlc = 4;
+
+    frame.data[0] = target_vel & 0xFF;         //
+    frame.data[1] = (target_vel >> 8) & 0xFF;  //
+    frame.data[2] = (target_vel >> 16) & 0xFF; //
+    frame.data[3] = (target_vel >> 24) & 0xFF; //
+
+    if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+    {
+        perror("Write");
+        return -1;
+    }
+
+    return 0;
+}
+
 int8_t elmo_can_set_target_position(int8_t s, int8_t node_id, uint32_t target_pos)
 {
     return elmo_can_write(s, node_id, ELMO_TARGET_POSITION, 0x00, target_pos);
+}
+
+int8_t elmo_can_set_target_position_sync(int8_t s, int8_t node_id, uint32_t target_pos)
+{
+    return elmo_can_write(s, node_id, ELMO_TARGET_POSITION, 0x00, target_pos);
+}
+
+int8_t elmo_can_set_target_torque(int8_t s, int8_t node_id, int16_t torque)
+{
+    return elmo_can_write(s, node_id, ELMO_TARGET_TORQUE, 0x00, torque);
+}
+
+int8_t elmo_can_set_target_torque_sync(int8_t s, int8_t node_id, int16_t torque)
+{
+    struct can_frame frame;
+    frame.can_id = 0x200 + node_id; //
+    frame.can_dlc = 2;
+
+    frame.data[0] = torque & 0xFF;        //
+    frame.data[1] = (torque >> 8) & 0xFF; //
+
+    if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+    {
+        perror("Write");
+        return -1;
+    }
+
+    return 0;
 }
 
 int8_t elmo_can_set_mode_op(int8_t s, int8_t node_id, int8_t mode_op)
@@ -829,11 +877,6 @@ int8_t elmo_init_motor(int8_t s, int8_t node_id, uint8_t mode)
     return 0;
 }
 
-int8_t elmo_can_set_target_torque(int8_t s, int8_t node_id, int16_t torque)
-{
-    return elmo_can_write(s, node_id, ELMO_TARGET_TORQUE, 0x00, torque);
-}
-
 uint32_t elmo_can_get_motor_rate_current(int8_t s, int8_t node_id)
 {
     if (elmo_can_read_req(s, node_id, ELMO_MOTOR_RATE_CURRENT, 0x00) < 0)
@@ -1000,12 +1043,6 @@ int8_t elmo_can_setup_RPDO(int8_t s, int8_t node_id, uint16_t cob_id, uint8_t sy
 
 int8_t elmo_can_setup_TPDO(int8_t s, int8_t node_id, uint16_t cob_id, uint8_t sync_type, uint32_t target_addr_map)
 {
-    // Disable TDPO1
-    elmo_can_write(s, node_id, 0x1800, 0x01, (uint32_t)0x80000000);
-
-    // set COB-id for TPDO1
-    elmo_can_write(s, node_id, 0x1800, 0x01, (uint32_t)(0x400001FF));
-
     // Stop all emissions on RPDO1
     elmo_can_write(s, node_id, 0x1A00, 0x00, 0x00000000);
 
@@ -1017,7 +1054,4 @@ int8_t elmo_can_setup_TPDO(int8_t s, int8_t node_id, uint16_t cob_id, uint8_t sy
 
     // Activate RPDO1
     elmo_can_write(s, node_id, 0x1A00, 0x00, 0x01);
-
-    // // Re-enable TPDO1
-    elmo_can_write(s, node_id, 0x1800, 0x01, (uint32_t)(0x400001FF));
 }
