@@ -6,3 +6,6 @@ example/configureElmo
 example/inverseKinematic
 example/torqInversKinematic
 example/up_iface
+example/torqPDO
+example/velPDO
+example/pdo
