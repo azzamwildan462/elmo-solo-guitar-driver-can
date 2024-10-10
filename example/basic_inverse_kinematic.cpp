@@ -2,19 +2,10 @@
 #include <math.h>
 #include <rd-kits/keyboard_input.h>
 
-#define BAUD_RATE 57600
 #define DEG2RAD *0.017452925
 #define RAD2DEG *57.295780
-#define ENC2CM 0.000036544981
-#define ENC2DEG 0.0000544623747
-#define CNTS2DEG (360.0f / 13186.0f)
-#define DEG2CNTS (13186.0f / 360.0f)
 #define RAD2CNTS (18000.0f * 0.5 / M_PI)
-#define MOTOR2CENTER 22.4
 #define MOTOR_RADIUS 6.3
-#define AUX_CONST 1
-#define DEAD_THRESH 1
-#define RPM2CPS 66.66666666666667
 
 float vel_x_robot, vel_y_robot, vel_theta_robot;
 int32_t vel_left_motor, vel_right_motor, vel_rear_motor;

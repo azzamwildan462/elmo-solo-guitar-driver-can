@@ -5,19 +5,10 @@
 #include "rd-kits/keyboard_input.h"
 #include "rd-kits/stdout_with_colour.h"
 
-#define BAUD_RATE 57600
 #define DEG2RAD *0.017452925
 #define RAD2DEG *57.295780
-#define ENC2CM 0.000036544981
-#define ENC2DEG 0.0000544623747
-#define CNTS2DEG (360.0f / 13186.0f)
-#define DEG2CNTS (13186.0f / 360.0f)
 #define RAD2CNTS (18000.0f * 0.5 / M_PI)
-#define MOTOR2CENTER 22.4
 #define MOTOR_RADIUS 6.3
-#define AUX_CONST 1
-#define DEAD_THRESH 1
-#define RPM2CPS 66.66666666666667
 
 #define KP 0.0075 // 0.005
 #define KI 0.0001 // 0.00042
@@ -325,19 +316,16 @@ int main()
         if (node_id_sword[0] > 0)
         {
             target_torque_left = set_velocity_left();
-            // elmo_can_clear_write_buffer(s);
             elmo_can_set_target_torque_sync(s, node_id[0], target_torque_left);
         }
         if (node_id_sword[1] > 0)
         {
             target_torque_right = set_velocity_right();
-            // elmo_can_clear_write_buffer(s);
             elmo_can_set_target_torque_sync(s, node_id[1], target_torque_right);
         }
         if (node_id_sword[2] > 0)
         {
             target_torque_rear = set_velocity_rear();
-            // elmo_can_clear_write_buffer(s);
             elmo_can_set_target_torque_sync(s, node_id[2], target_torque_rear);
         }
 
@@ -345,7 +333,7 @@ int main()
         // print encoder and target torque
         printf("Enc: %d %d %d || target Torq: %d %d %d\n", enc_now_left, enc_now_right, enc_now_rear, target_torque_left, target_torque_right, target_torque_rear);
 
-        usleep(10000); // 50 hz (WTF RMS lite?)
+        usleep(10000); // 100 hz (WTF RMS lite?)
     }
     return 0;
 }

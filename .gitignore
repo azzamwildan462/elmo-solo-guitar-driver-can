@@ -9,3 +9,10 @@ example/up_iface
 example/torqPDO
 example/velPDO
 example/pdo
+example/basicInverseKinematic
+example/inverseKinematic
+example/pdo 
+example/torqInversKinematic
+example/torqPDO 
+example/uo_iface
+example/velPDO
