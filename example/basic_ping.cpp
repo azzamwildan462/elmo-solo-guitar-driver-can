@@ -2,7 +2,7 @@
 
 int main()
 {
-    int8_t s = elmo_can_init("can2");
+    int8_t s = elmo_can_init("can0");
 
     int8_t active_nodes[128] = {0};
 

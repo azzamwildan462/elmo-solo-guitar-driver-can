@@ -725,51 +725,208 @@ int8_t elmo_can_ignore_ls(int8_t s, int8_t node_id) // Ignore limit switch
 {
     // Baca SIMPLIQ COMMAND IL[N] IP IB[N]
     // Menggunakan RPDO2 (COB-ID 0x300)
-    struct can_frame frame;
-    frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
-    frame.can_dlc = 8;                         // Data length for RPDO2 request is 8
 
-    // IL[4]=4
-    frame.data[0] = 0x49; // i
-    frame.data[1] = 0x4c; // l
-    frame.data[2] = 0x04; // Index (Low byte)
-    frame.data[3] = 0x00; // Index (High byte)
-    frame.data[4] = 0x04; // Data (low byte)
-    frame.data[5] = 0x00; // Data (second byte)
-    frame.data[6] = 0x00; // Data (third byte)
-    frame.data[7] = 0x00; // Data (high byte)
+    // {
+    //     struct can_frame frame;
+    //     frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+    //     frame.can_dlc = 8;                         // Data length for RPDO2 request is 8
 
-    // Send the RPDO2 write request
-    if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+    //     // IL[4] = 4 frame.data[0] = 0x49; // i
+    //     frame.data[1] = 0x4c;           // l
+    //     frame.data[2] = 0x04;           // Index (Low byte)
+    //     frame.data[3] = 0x00;           // Index (High byte)
+    //     frame.data[4] = 0x04;           // Data (low byte)
+    //     frame.data[5] = 0x00;           // Data (second byte)
+    //     frame.data[6] = 0x00;           // Data (third byte)
+    //     frame.data[7] = 0x00;           // Data (high byte)
+
+    //     // Send the RPDO2 write request
+    //     if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+    //     {
+    //         perror("Write");
+    //         return -1;
+    //     }
+
+    //     usleep(1000);
+
+    //     struct can_frame frame2;
+    //     frame2.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+    //     frame2.can_dlc = 8;                         // Data length for RPDO2 request is 8
+
+    //     // IL[3]=4
+    //     frame2.data[0] = 0x49; // 'i'
+    //     frame2.data[1] = 0x4c; // 'l'
+    //     frame2.data[2] = 0x03; // LSB index
+    //     frame2.data[3] = 0x00; // MSB index
+    //     frame2.data[4] = 0x04; // Value (low byte)
+    //     frame2.data[5] = 0x00; // Value (second byte)
+    //     frame2.data[6] = 0x00; // Value (third byte)
+    //     frame2.data[7] = 0x00; // Value (high byte)
+
+    //     // Send the RPDO2 trigger (lihat pada Elmo DS-301)
+    //     if (write(s, &frame2, sizeof(struct can_frame)) != sizeof(struct can_frame))
+    //     {
+    //         perror("Write");
+    //         return -2;
+    //     }
+    // }
+
     {
-        perror("Write");
-        return -1;
+        struct can_frame frame;
+        frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+        frame.can_dlc = 8;
+
+        frame.data[0] = 0x49; // i
+        frame.data[1] = 0x4c; // l
+        frame.data[2] = 0x01; // Index (Low byte)
+        frame.data[3] = 0x00; // Index (High byte)
+        frame.data[4] = 0x01; // Data (low byte)
+        frame.data[5] = 0x00; // Data (second byte)
+        frame.data[6] = 0x00; // Data (third byte)
+        frame.data[7] = 0x00; // Data (high byte)
+
+        // Send the RPDO2 write request
+        if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+        {
+            perror("Write");
+            return -1;
+        }
+
+        usleep(1000);
     }
 
-    usleep(1000);
-
-    struct can_frame frame2;
-    frame2.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
-    frame2.can_dlc = 8;                         // Data length for RPDO2 request is 8
-
-    // IL[3]=4
-    frame2.data[0] = 0x49; // 'i'
-    frame2.data[1] = 0x4c; // 'l'
-    frame2.data[2] = 0x03; // LSB index
-    frame2.data[3] = 0x00; // MSB index
-    frame2.data[4] = 0x04; // Value (low byte)
-    frame2.data[5] = 0x00; // Value (second byte)
-    frame2.data[6] = 0x00; // Value (third byte)
-    frame2.data[7] = 0x00; // Value (high byte)
-
-    // Send the RPDO2 trigger (lihat pada Elmo DS-301)
-    if (write(s, &frame2, sizeof(struct can_frame)) != sizeof(struct can_frame))
     {
-        perror("Write");
-        return -2;
+        struct can_frame frame;
+        frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+        frame.can_dlc = 8;                         // Data length for RPDO2 request is 8
+
+        uint8_t command_value = 5;
+        for (int i = 2; i < 9; i++)
+        {
+            frame.data[0] = 0x49;          // i
+            frame.data[1] = 0x4c;          // l
+            frame.data[2] = i;             // Index (Low byte)
+            frame.data[3] = 0x00;          // Index (High byte)
+            frame.data[4] = command_value; // Data (low byte)
+            frame.data[5] = 0x00;          // Data (second byte)
+            frame.data[6] = 0x00;          // Data (third byte)
+            frame.data[7] = 0x00;          // Data (high byte)
+
+            // Send the RPDO2 write request
+            if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+            {
+                perror("Write");
+                return -1;
+            }
+
+            usleep(1000);
+        }
+    }
+
+    {
+        struct can_frame frame;
+        frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+        frame.can_dlc = 8;                         // Data length for RPDO2 request is 8
+
+        uint8_t command_value = 4;
+        for (int i = 9; i < 11; i++)
+        {
+            frame.data[0] = 0x49;          // i
+            frame.data[1] = 0x4c;          // l
+            frame.data[2] = i;             // Index (Low byte)
+            frame.data[3] = 0x00;          // Index (High byte)
+            frame.data[4] = command_value; // Data (low byte)
+            frame.data[5] = 0x00;          // Data (second byte)
+            frame.data[6] = 0x00;          // Data (third byte)
+            frame.data[7] = 0x00;          // Data (high byte)
+
+            // Send the RPDO2 write request
+            if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+            {
+                perror("Write");
+                return -1;
+            }
+
+            usleep(1000);
+        }
     }
 
     return 0;
+}
+
+int8_t elmo_can_set_pi_control(int8_t s, int8_t node_id, uint32_t kp, uint32_t ki)
+{
+    {
+        struct can_frame frame;
+        frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+        frame.can_dlc = 8;                         // Data length for RPDO2 request is 8
+
+        frame.data[0] = 0x47; // G
+        frame.data[1] = 0x53; // S
+        frame.data[2] = 0x02; // Index (Low byte)
+        frame.data[3] = 0x00; // Index (High byte)
+        frame.data[4] = 0x00; // Data (low byte)
+        frame.data[5] = 0x00; // Data (second byte)
+        frame.data[6] = 0x00; // Data (third byte)
+        frame.data[7] = 0x00; // Data (high byte)
+
+        // Send the RPDO2 write request
+        if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+        {
+            perror("Write");
+            return -1;
+        }
+
+        usleep(1000);
+    }
+    {
+        struct can_frame frame_kp;
+        frame_kp.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+        frame_kp.can_dlc = 8;                         // Data length for RPDO2 request is 8
+
+        // Set KP
+        frame_kp.data[0] = 0x4B;              // 'K'
+        frame_kp.data[1] = 0x50;              // 'P'
+        frame_kp.data[2] = 0x02;              // Index (Low byte)
+        frame_kp.data[3] = 0x00;              // Index (High byte)
+        frame_kp.data[4] = kp & 0xFF;         // Data (low byte)
+        frame_kp.data[5] = (kp >> 8) & 0xFF;  // Data (second byte)
+        frame_kp.data[6] = (kp >> 16) & 0xFF; // Data (third byte)
+        frame_kp.data[7] = (kp >> 24) & 0xFF; // Data (high byte)
+
+        // Send the RPDO2 write request
+        if (write(s, &frame_kp, sizeof(struct can_frame)) != sizeof(struct can_frame))
+        {
+            perror("Write");
+            return -1;
+        }
+
+        usleep(5000);
+    }
+    {
+        struct can_frame frame_ki;
+        frame_ki.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+        frame_ki.can_dlc = 8;                         // Data length for RPDO2 request is 8
+
+        // Set KI
+        frame_ki.data[0] = 0x4B;              // 'K'
+        frame_ki.data[1] = 0x49;              // 'I'
+        frame_ki.data[2] = 0x02;              // Index (Low byte)
+        frame_ki.data[3] = 0x00;              // Index (High byte)
+        frame_ki.data[4] = ki & 0xFF;         // Data (low byte)
+        frame_ki.data[5] = (ki >> 8) & 0xFF;  // Data (second byte)
+        frame_ki.data[6] = (ki >> 16) & 0xFF; // Data (third byte)
+        frame_ki.data[7] = (ki >> 24) & 0xFF; // Data (high byte)
+
+        // Send the RPDO2 write request
+        if (write(s, &frame_ki, sizeof(struct can_frame)) != sizeof(struct can_frame))
+        {
+            perror("Write");
+            return -1;
+        }
+
+        usleep(5000);
+    }
 }
 
 uint16_t elmo_can_set_s_word(int8_t s, int8_t node_id)
@@ -818,6 +975,13 @@ int8_t elmo_init_motor(int8_t s, int8_t node_id, uint8_t mode)
     if (elmo_can_ignore_ls(s, node_id) < 0)
     {
         return -4;
+    }
+    usleep(5000);
+
+    // SET PI CONTROL (KP[2], KI[2]) (Baca SIMPLIQ COMMAND KP[N] KI[N])
+    if (elmo_can_set_pi_control(s, node_id, 60, 1000) < 0)
+    {
+        return -5;
     }
     usleep(5000);
 
@@ -1054,4 +1218,138 @@ int8_t elmo_can_setup_TPDO(int8_t s, int8_t node_id, uint16_t cob_id, uint8_t sy
 
     // Activate RPDO1
     elmo_can_write(s, node_id, 0x1A00, 0x00, 0x01);
+}
+
+uint64_t elmo_write_binary_interpreter(int8_t s, int8_t node_id, std::string cmd, bool is_float, uint16_t timeout_ms)
+{
+    struct can_frame frame;
+    frame.can_id = ELMO_COBID_RPDO2 + node_id; // RPDO2 request to node ID
+    frame.can_dlc = 8;                         // Data length for RPDO2 request is 8
+
+    std::string buffer_index = "";
+    std::string buffer_command = "";
+    std::string buffer_value = "";
+    uint8_t doing_job = 0;
+    bool is_query = true;
+    for (char c : cmd)
+    {
+        if (c == '[')
+        {
+            doing_job = 1;
+            continue;
+        }
+        else if (c == ']')
+        {
+            doing_job = 2;
+            continue;
+        }
+        else if (c == '=')
+        {
+            is_query = false;
+            continue;
+        }
+        else if (c == ' ')
+        {
+            continue;
+        }
+
+        if (doing_job == 0)
+        {
+            buffer_command += c;
+        }
+        else if (doing_job == 1)
+        {
+            buffer_index += c;
+        }
+        else if (doing_job == 2)
+        {
+            buffer_value += c;
+        }
+    }
+
+    if (buffer_command == "" && buffer_index == "" && buffer_value == "")
+    {
+        return 0;
+    }
+
+    printf("%d %d || %s || %s || %s -> ", is_query, is_float, buffer_command.c_str(), buffer_index.c_str(), buffer_value.c_str());
+
+    frame.data[0] = buffer_command[0];
+    frame.data[1] = buffer_command[1];
+
+    uint16_t index_integer = std::stoi(buffer_index);
+    frame.data[2] = index_integer & 0xFF;
+    frame.data[3] = (index_integer >> 8) & 0xFF;
+
+    if (is_query)
+        frame.data[3] |= 0b01000000;
+    if (is_float)
+        frame.data[3] |= 0b10000000;
+
+    if (!is_query)
+    {
+        if (is_float)
+        {
+            float value_float = std::stof(buffer_value);
+            memcpy(&frame.data[4], &value_float, 4);
+        }
+        else
+        {
+            int value_int = std::stoi(buffer_value);
+            memcpy(&frame.data[4], &value_int, 4);
+        }
+    }
+
+    printf("%.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x\n", frame.data[0], frame.data[1], frame.data[2], frame.data[3], frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
+
+    // Send the RPDO2 write request
+    if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame))
+    {
+        perror("Write");
+        return -1;
+    }
+    usleep(5000);
+
+    uint64_t ret_buffer = 0;
+    uint8_t cntr_ditemukan = 0;
+
+    while (cntr_ditemukan < 20)
+    {
+        // Read the CAN frame
+        struct can_frame frame;
+        fd_set read_fds;
+        struct timeval timeout;
+        int retval;
+
+        // Set up the file descriptor set
+        FD_ZERO(&read_fds);
+        FD_SET(s, &read_fds);
+
+        // Set timeout values
+        timeout.tv_sec = timeout_ms / 1000;
+        timeout.tv_usec = (timeout_ms % 1000) * 1000;
+
+        // Wait for data to be available on the set
+        retval = select(s + 1, &read_fds, NULL, NULL, &timeout);
+
+        if (retval == -1 || retval == 0)
+        {
+            cntr_ditemukan++;
+            continue;
+        }
+
+        if (read(s, &frame, sizeof(struct can_frame)) < 0)
+        {
+            perror("Read");
+        }
+
+        // Check if the response is from the expected node
+        if (frame.can_id == ELMO_COBID_TPDO2 + node_id)
+        {
+            memcpy(&ret_buffer, &frame.data[0], 8);
+            cntr_ditemukan += 20;
+        }
+    }
+
+    return ret_buffer;
 }

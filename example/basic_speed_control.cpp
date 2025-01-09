@@ -66,6 +66,22 @@ int main()
                 elmo_can_set_target_velocity(s, node_id, dps2cps(120));
                 break;
 
+            case 'r':
+            {
+                uint64_t fb = elmo_write_binary_interpreter(s, node_id, "KP[2]", false, 1);
+
+                printf("fb: %ld\n", fb);
+                break;
+            }
+
+            case 'R':
+            {
+                uint64_t fb = elmo_write_binary_interpreter(s, node_id, "KP[2]=60", false, 1);
+
+                printf("fb: %ld\n", fb);
+                break;
+            }
+
             case '0':
                 elmo_can_send_NMT(s, 0x81, node_id);
                 break;
@@ -103,6 +119,13 @@ int main()
                 printf("Enc Vx: %d\n", enc_vx);
                 break;
             }
+            case 'f':
+            {
+                uint32_t m_type = elmo_can_read_req(s, node_id, 0x6075, 0);
+                elmo_can_read(s, node_id, m_type, 1000);
+                printf("m_type: %d\n", m_type);
+                break;
+            }
 
             case 'z':
             {
@@ -120,18 +143,18 @@ int main()
             }
             case 'c':
             {
-                uint16_t stts = elmo_can_read_req(s, node_id, ELMO_ERROR_CODE_402, 0);
-                elmo_can_read(s, node_id, stts, 1000);
-                printf("ER603f: %x\n", stts);
+                uint16_t stts = elmo_can_read_req(s, node_id, 0x2020, 1);
+                elmo_can_read(s, node_id, stts, 3000);
+                printf("0x2001: %x\n", stts);
                 break;
             }
-            case 'r':
-            {
-                int16_t stts = elmo_can_read_req(s, node_id, 0x6076, 0);
-                elmo_can_read(s, node_id, stts, 1000);
-                printf("stts: %d\n", stts);
-                break;
-            }
+            // case 'r':
+            // {
+            //     int16_t stts = elmo_can_read_req(s, node_id, 0x6076, 0);
+            //     elmo_can_read(s, node_id, stts, 1000);
+            //     printf("stts: %d\n", stts);
+            //     break;
+            // }
             case 'g':
             {
                 int16_t stts = elmo_can_read_req(s, node_id, 0x6073, 0);
@@ -151,27 +174,33 @@ int main()
                 elmo_can_write(s, node_id, 0x6073, 0x00, 280);
                 break;
             }
+            case 'm':
+            {
+                uint32_t digital_input = elmo_can_read_req(s, node_id, 0x2200, 0);
+                elmo_can_read(s, node_id, digital_input, 1000);
+                printf("digital_input: %x\n", digital_input);
+                break;
             }
+            }
+
+            // int16_t torq_6077 = elmo_can_read_req(s, node_id, ELMO_ACTUAL_TORQUE, 0);
+            // elmo_can_read(s, node_id, torq_6077, 1000);
+
+            // uint32_t torq_6077 = elmo_can_read_req(s, node_id, 0x6502, 0);
+            // elmo_can_read(s, node_id, torq_6077, 1000);
+
+            // int16_t cur_6078 = elmo_can_read_req(s, node_id, ELMO_ACTUAL_CURRENT, 0);
+            // elmo_can_read(s, node_id, cur_6078, 1000);
+
+            // int32_t cur_6069 = elmo_can_read_req(s, node_id, 0x6069, 0);
+            // elmo_can_read(s, node_id, cur_6069, 1000);
+
+            // int32_t enc_px = elmo_can_get_enc_px(s, node_id);
+            // printf("Enc Px: %d %d|| %d %d \n", enc_px, cur_6069, torq_6077, cur_6078);
+
+            usleep(20000); // 50 hz (WTF RMS lite?)
         }
-
-        // int16_t torq_6077 = elmo_can_read_req(s, node_id, ELMO_ACTUAL_TORQUE, 0);
-        // elmo_can_read(s, node_id, torq_6077, 1000);
-
-        // uint32_t torq_6077 = elmo_can_read_req(s, node_id, 0x6502, 0);
-        // elmo_can_read(s, node_id, torq_6077, 1000);
-
-        // int16_t cur_6078 = elmo_can_read_req(s, node_id, ELMO_ACTUAL_CURRENT, 0);
-        // elmo_can_read(s, node_id, cur_6078, 1000);
-
-        // int32_t cur_6069 = elmo_can_read_req(s, node_id, 0x6069, 0);
-        // elmo_can_read(s, node_id, cur_6069, 1000);
-
-        // int32_t enc_px = elmo_can_get_enc_px(s, node_id);
-        // printf("Enc Px: %d %d|| %d %d \n", enc_px, cur_6069, torq_6077, cur_6078);
-
-        usleep(20000); // 50 hz (WTF RMS lite?)
     }
-
     return 0;
 }
 

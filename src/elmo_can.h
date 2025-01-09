@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <cerrno>
+#include <string>
 
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -81,6 +82,8 @@ int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex
 int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex, uint8_t value);
 int8_t elmo_can_write(int8_t s, int8_t node_id, uint16_t index, uint8_t subindex, int8_t value);
 
+uint64_t elmo_write_binary_interpreter(int8_t s, int8_t node_id, std::string cmd, bool is_float, uint16_t timeout_ms);
+
 /* High-Level API */
 //==============================================================================
 
@@ -92,6 +95,7 @@ int8_t elmo_can_ignore_ls(int8_t s, int8_t node_id); // Ignore limit switch
 int8_t elmo_can_set_node_id(int8_t s, int8_t node_id, int8_t new_node_id);
 int8_t elmo_can_set_bitrate(int8_t s, int8_t node_id, int8_t bitrate);
 int8_t elmo_can_save_config(int8_t s, int8_t node_id);
+int8_t elmo_can_set_pi_control(int8_t s, int8_t node_id, uint32_t kp, uint32_t ki);
 
 int8_t elmo_can_set_quick_stop(int8_t s, int8_t node_id, int16_t quick_stop);
 int8_t elmo_can_set_c_word(int8_t s, int8_t node_id, uint16_t c_word);
